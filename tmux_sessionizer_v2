@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Function to start or attach to a tmux session
+start_or_attach_session() {
+    local session_name=$1
+    if tmux has-session -t "$session_name" 2> /dev/null; then
+        # If the session exists, just attach to it
+        tmux attach-session -t "$session_name"
+    else
+        # If the session doesn't exist, create and attach to it
+        tmux new-session -s "$session_name" \; attach-session
+    fi
+}
+
+# Check if we are inside tmux
+if [ -z "$TMUX" ]; then
+    # If not inside tmux, start or attach to the 'default' session
+    start_or_attach_session "default"
+    exit 0
+fi
+
+# Get the current tmux session name
+current_session=$(tmux display-message -p '#S')
+
+# Your existing script logic for finding and creating a session
+session=$(find ~ ~/Personal ~/Work -mindepth 1 -maxdepth 1 -type d | fzf)
+session_name=$(basename "$session" | tr . _)
+
+# Check if the session exists, create it if it doesn't
+if ! tmux has-session -t "$session_name" 2> /dev/null; then
+    tmux new-session -s "$session_name" -c "$session" -d
+fi
+
+# Switch to the new session
+tmux switch-client -t "$session_name"
+
+# The script will wait here until the new session is exited
+
+# Switch back to the original session
+tmux switch-client -t "$current_session"

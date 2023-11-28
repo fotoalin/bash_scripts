@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# WIP: having issues in switching back to previous session
+
 # Function to start or attach to a tmux session
 start_or_attach_session() {
     local session_name=$1
